@@ -1,36 +1,31 @@
 import React from "react";
 import {
   StyleSheet,
-  Text,
   View,
-  TextInput,
+  Text,
   Button,
+  Image,
   FlatList,
   Pressable,
 } from "react-native";
 
+import AddModal from "./components/AddModal";
+
 export default function App() {
-  const [inputValue, setInputValue] = React.useState<string>("");
+  const [addModal, setAddModal] = React.useState<boolean>(false);
   const [goalsList, setGoalsList] = React.useState<
     { id: string; title: string }[]
   >([]);
 
-  const inputValueHandler = (newValue: string) => {
-    setInputValue(newValue);
+  const toggleAddModal = () => {
+    setAddModal((prevState) => !prevState);
   };
 
-  const addGoalHandler = () => {
-    if (inputValue.length < 1) return;
-
+  const addGoalHandler = (inputValue: string) => {
     setGoalsList((prevValue) => [
       ...prevValue,
       { id: `g${prevValue.length++}`, title: inputValue },
     ]);
-    setInputValue("");
-  };
-
-  const clearGoalsHandler = () => {
-    setGoalsList([]);
   };
 
   const removeGoalHandler = (id: string) => {
@@ -39,18 +34,27 @@ export default function App() {
 
   return (
     <View style={styles.mainContainer}>
+      <AddModal
+        visible={addModal}
+        toggleVisibility={toggleAddModal}
+        onAddGoal={addGoalHandler}
+      />
       <View style={styles.goalsContainer}>
         {goalsList.length > 0 ? (
           <FlatList
             data={goalsList}
             renderItem={(itemData) => (
-              <Pressable
-                onPress={removeGoalHandler.bind(null, itemData.item.id)}
-              >
-                <View style={styles.goal}>
-                  <Text style={styles.goalText}>{itemData.item.title}</Text>
-                </View>
-              </Pressable>
+              <View style={styles.goal}>
+                <Text style={styles.goalText}>{itemData.item.title}</Text>
+                <Pressable
+                  onPress={removeGoalHandler.bind(null, itemData.item.id)}
+                >
+                  <Image
+                    source={require("./assets/img/x-icon.png")}
+                    style={styles.goalDeleteIcon}
+                  />
+                </Pressable>
+              </View>
             )}
             keyExtractor={(item) => item.id}
           />
@@ -58,16 +62,7 @@ export default function App() {
           <Text style={styles.goalText}>No goals yet.</Text>
         )}
       </View>
-      <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Goal title"
-          style={styles.input}
-          value={inputValue}
-          onChangeText={inputValueHandler}
-        />
-        <Button title="Add" onPress={addGoalHandler} />
-        <Button title="Clear" onPress={clearGoalsHandler} />
-      </View>
+      <Button title="Add new goal" onPress={toggleAddModal} />
     </View>
   );
 }
@@ -75,33 +70,29 @@ export default function App() {
 const styles = StyleSheet.create({
   mainContainer: {
     paddingTop: 60,
+    paddingBottom: 30,
     paddingHorizontal: 16,
     flex: 1,
     justifyContent: "space-between",
   },
   goalsContainer: {
     flex: 5,
+    paddingHorizontal: 32,
   },
   goal: {
     marginVertical: 5,
     paddingVertical: 10,
-    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomWidth: 1,
   },
   goalText: {
     fontSize: 16,
     textAlign: "center",
   },
-  inputContainer: {
-    flex: 1,
-    gap: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  input: {
-    paddingBottom: 6,
-    flex: 1,
-    fontSize: 16,
-    borderBottomWidth: 1,
+  goalDeleteIcon: {
+    width: 20,
+    height: 20,
   },
 });
